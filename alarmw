@@ -1,0 +1,48 @@
+#!/bin/bash
+# A task notification script for taskwarrior
+# By Mohammadreza Moghimi @mimr9
+# mimr.moghimi@gmail.com
+# Version 1.0
+
+title=$(task $1 information | grep Description);
+
+#year=$( task $1 information | grep Due | awk '{ print $2 }' | awk -F "-" '{ print $1 }'); # for extending
+#month=$( task $1 information | grep Due | awk '{ print $2 }' | awk -F "-" '{ print $2 }'); # for extending
+day=$( task $1 information | grep Due | awk '{ print $2 }' | awk -F "-" '{ print $3 }');
+day=$( echo $day | bc );
+hour=$( task $1 information | grep Due | awk '{ print $3 }' | awk -F ":" '{ print $1 }');
+hour=$( echo $hour | bc );
+minute=$( task $1 information | grep Due | awk '{ print $3 }' | awk -F ":" '{ print $2 }');
+minute=$( echo $minute | bc );
+second=$( task $1 information | grep Due | awk '{ print $3 }' | awk -F ":" '{ print $3 }');
+second=$( echo $second | bc );
+
+#now_year=$( date "+%Y" );# for extending
+#now_month=$( date "+%m" );# for extending
+now_day=$( date "+%d" );
+now_day=$( echo $now_day | bc );
+now_hour=$( date "+%H" );
+now_hour=$( echo $now_hour | bc );
+ow_minute=$( date "+%M" );
+now_minute=$( echo $now_minute | bc );
+now_second=$( date "+%S" );
+now_second=$( echo $now_second | bc );
+
+# dif_year=$(( now_year - year ));# for extending
+# dif_month=$(( now_month - month ));# for extending
+dif_day=$(( ${day#0} - now_day ));
+dif_hour=$(( ${hour#0} - now_hour ));
+dif_minute=$(( ${minute#0} - now_minute ));
+dif_second=$(( ${second#0} - now_second ));
+
+total=$(( dif_second + ( dif_minute * 60 ) + ( dif_hour * 3600 ) + ( dif_day * 86400 ) ));
+
+if [ $total -gt 0 ]
+then
+	sleep $((total))s;
+
+	notify-send "Pay attention to: " "$title";
+	mplayer -nolirc /usr/share/sounds/sound-icons/glass-water-1.wav < /dev/null
+fi
+
+exit 0;
